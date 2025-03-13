@@ -58,4 +58,4 @@ Other Commands:
     timestomp: Allows modification of file timestamps to complicate forensic analysis.
     golden_ticket_create: Creates a golden Kerberos ticket for further access or persistence.
 
-Signature: Hacked by COS Q TAN Q
+
