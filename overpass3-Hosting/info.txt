@@ -1,0 +1,96 @@
+CTF Write-Up: Overpass Hosting (THM)
+
+Objective: Capture the Web, User, and Root flags from the target machine to complete the challenge.
+1. Information Gathering
+
+We begin with scanning the target machine's open ports and services to gather information:
+
+PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+22/tcp open  ssh     OpenSSH 8.0 (protocol 2.0)
+80/tcp open  http    Apache httpd 2.4.37 ((centos))
+
+    FTP (21) is open running vsftpd 3.0.3.
+    SSH (22) is open, running OpenSSH 8.0, with valid host keys.
+    HTTP (80) is open, running Apache 2.4.37 (CentOS).
+
+2. Web Enumeration with Gobuster
+
+We performed a directory brute force using gobuster to discover hidden directories and files:
+
+gobuster dir -u http://10.10.190.67 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+
+Results:
+
+    Discovered multiple directories including .htaccess, .htpasswd, /backups/, and /cgi-bin/.
+    The /backups/ directory was found to be interesting as it redirected to another URL.
+
+/backups              (Status: 301) [Size: 236] [--> http://10.10.190.67/backups/]
+
+3. GPG Key Import
+
+We discovered that there was a GPG key involved, and we imported it using the following command:
+
+gpg --import priv.key
+
+This imported the secret key associated with Paradox paradox@overpass.thm.
+4. Decrypting the File (CustomerDetails.xlsx.gpg)
+
+Next, we tried to decrypt a file, CustomerDetails.xlsx.gpg, using GPG:
+
+gpg CustomerDetails.xlsx.gpg
+
+However, there was a warning that the secret key had expired:
+
+gpg: WARNING: no command supplied. Trying to guess what you mean ...
+gpg: Note: secret key 9E86A1C63FB96335 expired at Tue 08 Nov 2022 04:14:31 PM EST
+gpg: encrypted with 2048-bit RSA key, ID 9E86A1C63FB96335
+
+5. SSH Key Generation
+
+At this point, we moved on to generating an SSH key pair. The SSH key was created with the passphrase ShibesAreGreat123:
+
+ssh-keygen
+
+    Saved the private key as sshkey and the public key as sshkey.pub.
+
+The key fingerprint:
+
+SHA256:nh2RT+56hVrqmYSJUGSG50Vrp0+DYAo/r9Iy+P/LofI paradox@ip-10-10-190-67
+
+We will later use this key for authentication.
+6. NFS Mounting Attempt
+
+We attempted to mount an NFS share (127.0.0.1:/home/james) using the following command:
+
+mount -t nfs 127.0.0.1:/home/james /home/parrot/nfs
+
+However, there was an error indicating that the --types option is restricted to the root user.
+7. Flag Collection
+Web Flag:
+
+We accessed the web server and found the web flag as part of the directory enumeration process. The flag is:
+
+Web Flag: thm{0ae72f7870c3687129f7a824194be09d}
+
+User Flag:
+
+We were able to escalate our privileges to user level and obtained the user flag:
+
+User Flag: thm{3693fc86661faa21f16ac9508a43e1ae}
+
+Root Flag:
+
+After gaining root access, we found the root flag:
+
+Root Flag: thm{a4f6adb70371a4bceb32988417456c44}
+
+8. Conclusion
+
+After going through various stages such as enumeration, key management, and privilege escalation, we successfully captured the Web, User, and Root flags for the Overpass Hosting challenge.
+
+    Web Flag: thm{0ae72f7870c3687129f7a824194be09d}
+    User Flag: thm{3693fc86661faa21f16ac9508a43e1ae}
+    Root Flag: thm{a4f6adb70371a4bceb32988417456c44}
+
+This exercise involved a combination of traditional web exploitation, GPG key handling, SSH key generation, and privilege escalation techniques.

