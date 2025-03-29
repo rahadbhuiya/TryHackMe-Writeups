@@ -1,0 +1,76 @@
+Reconnaissance Summary:
+Website:
+URL: "Rick is sup4er cool"
+
+Username Found in Source Code: R1ckRul3s (found in the comment section of the page)
+
+Port Scan Results:
+SSH (Port 22/tcp)
+
+Service: OpenSSH 8.2p1
+
+OS: Ubuntu Linux
+
+SSH Hostkeys:
+
+RSA: 6c:79:d3:89:f0:42:3b:bf:33:66:11:f4:14:fc:b9:c7
+
+ECDSA: 4a:1b:35:8f:06:8e:ad:b8:ed:78:26:79:e4:f8:75:03
+
+ED25519: c9:27:0a:06:ee:6b:5b:d7:7b:1d:06:ad:46:59:80:20
+
+HTTP (Port 80/tcp)
+
+Service: Apache HTTPD 2.4.41
+
+Web Pages Found:
+
+/index.html: Returns HTTP 200 (valid page)
+
+/robots.txt: Returns HTTP 200 (valid page)
+
+/login.php: Returns HTTP 200 (login page)
+
+/portal.php: Redirects to /login.php
+
+/assets/: Directory redirects
+
+Server Info: Apache/2.4.41 (Ubuntu)
+
+Gobuster Results (Directory Enumeration):
+Some notable results include /index.html, /login.php, and /robots.txt with a possible credential or password hint ("Wubbalubbadubdub").
+
+Password Guessing:
+Upon examining the robots.txt, a possible password hint Wubbalubbadubdub was found, which seems to be from the "Rick and Morty" show.
+
+Webshell Access:
+After successful exploitation, you gained access to the webshell. However, you encountered some restrictions, specifically the inability to use the cat command. To work around this, you used the following commands to read a secret file (Sup3rS3cretPickl3Ingred.txt):
+
+Command Used: tac Sup3rS3cretPickl3Ingred.txt
+
+
+
+File Content (Ingredients for Rick’s Potion):
+
+First Ingredient: Mr. Meeseek Hair
+
+Second Ingredient: 1 Jerry Tear
+
+Last Ingredient: Fleeb Juice
+
+
+
+
+Final Report:
+Username found: R1ckRul3s
+
+Password Hint: Wubbalubbadubdub
+
+Potion Ingredients:
+
+Mr. Meeseek Hair
+
+1 Jerry Tear
+
+Fleeb Juice
+
